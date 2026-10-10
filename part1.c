@@ -1,0 +1,27 @@
+#include <stdio.h>
+
+int main() {
+    double x, y;
+
+    printf("Enter a real number x: ");
+    if (scanf("%lf", &x) != 1) {
+        printf("Error: Invalid input data.\n");
+        return 1;
+    }
+
+    if (x >= 0 && x < 7) {
+        y = -6.0 * x * x + 8.0;
+    }
+    else if (x <= -10 || x >= 11) {
+        y = -(x * x * x) / 7.0 + 10.0;
+    }
+
+    if (is_defined) {
+        printf("y(x) = %.4f\n", y);
+    } else {
+        printf("Function is not defined for the given x.\n");
+    }
+
+    return 0;
+}
+
