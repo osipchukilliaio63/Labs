@@ -63,4 +63,147 @@ $$S = \frac{1}{1+x^2} = \sum_{i=0}^{n} (-1)^i \cdot x^{2i}$$
 Перший спосіб із використанням вкладених циклів продемонстрував квадратичну складність $O(n^2)$, оскільки операція степеня обчислюється «з нуля» на кожній ітерації. 
 Другий спосіб на основі методу динамічного програмування показав значно вищу ефективність із лінійною складністю $O(n)$, оскільки кожен наступний доданок накопичується на базі попереднього. Це дозволило скоротити кількість операцій при $n=100$ у 64 рази, зберігши абсолютно однакову точність типу `double`.
 
+## Лабораторна робота №3
+Тема:Стеки та черги
+Завдання: Чергою змоделювати планування процесів методом кругового обслуговування (round robin) з фіксованим квантом часу: кожен процес має відому загальну тривалість виконання; на кожному кроці процес з початку черги виконується один квант, після чого (якщо не завершився) повертається в кінець черги. Вивести порядок завершення процесів +додатково визначити для кожного процесу його час очікування (сумарний час у черзі) та час обороту (від надходження до завершення).додатково визначити для кожного процесу його час очікування (сумарний час у черзі) та час обороту (від надходження до завершення).
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+#define MAX_PROCESSES 100
+#define MAX_QUEUE 100
+
+typedef struct {
+    char name[10];       
+    int burst_time;      
+    int remaining_time;  
+    int quantum;         
+    int waiting_time;    
+} Process;
+
+typedef struct {
+    int data[MAX_QUEUE];
+    int head;
+    int tail;
+    int count;
+} Queue;
+
+void init_queue(Queue *q) {
+    q->head = 0;
+    q->tail = 0;
+    q->count = 0;
+}
+
+bool is_empty(Queue *q) {
+    return q->count == 0;
+}
+
+bool is_full(Queue *q) {
+    return q->count == MAX_QUEUE;
+}
+
+void enqueue(Queue *q, int val) {
+    if (is_full(q)) {
+        printf("[ERROR] Queue overflow! Cannot enqueue.\n");
+        return;
+    }
+    q->data[q->tail] = val;
+    q->tail = (q->tail + 1) % MAX_QUEUE;
+    q->count++;
+}
+
+int dequeue(Queue *q) {
+    if (is_empty(q)) {
+        printf("[ERROR] Queue underflow! Cannot dequeue from an empty array.\n");
+        return -1;
+    }
+    int val = q->data[q->head];
+    q->head = (q->head + 1) % MAX_QUEUE;
+    q->count--;
+    return val;
+}
+```
+
+### Результат роботи (Circular Array)
+![Результат роботи на масиві](lab3.1.jpg)
+
+---
+
+## 2. Код програми 2: Динамічний зв'язаний список (Linked List)
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct {
+    char name[10];
+    int burst_time;
+    int remaining_time;
+    int quantum;
+    int completion_time;
+} Process;
+
+typedef struct Node {
+    int process_index;
+    struct Node* next;
+} Node;
+
+typedef struct {
+    Node* head;
+    Node* tail;
+} Queue;
+
+void init_queue(Queue *q) {
+    q->head = NULL;
+    q->tail = NULL;
+}
+
+bool is_empty(Queue *q) {
+    return q->head == NULL;
+}
+
+void enqueue(Queue *q, int process_index) {
+    Node* new_node = (Node*)malloc(sizeof(Node));
+    if (!new_node) return;
+    new_node->process_index = process_index;
+    new_node->next = NULL;
+
+    if (is_empty(q)) {
+        q->head = new_node;
+        q->tail = new_node;
+    } else {
+        q->tail->next = new_node;
+        q->tail = new_node;
+    }
+}
+
+int dequeue(Queue *q) {
+    if (is_empty(q)) return -1;
+
+    Node* temp = q->head;
+    int res = temp->process_index;
+
+    q->head = q->head->next;
+    if (q->head == NULL) {
+        q->tail = NULL;
+    }
+
+    free(temp);
+    return res;
+}
+```
+
+### Результат роботи (Linked List)
+![Результат роботи на списку](lab3.2.jpg)
+
+---
+
+## 3. Аналіз результатів та Висновок
+
+* **Тестування:** Обидві структури даних були протестовані на однакових вхідних даних (процеси P1, P2, P3 з індивідуальними квантами). Результати симуляції повністю збігаються (Середній час очікування = **10.33**), що доводить правильність логіки алгоритму.
+* **Порівняння:** Реалізація на кільцевому масиві є швидшою у виконанні, але обмежена фіксованим розміром статичного буфера. Динамічний список дозволяє гнучко використовувати оперативну пам'ять без обмежень на кількість процесів, проте потребує ручного очищення пам'яті за допомогою `free()`.
+
 
